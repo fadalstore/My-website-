@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('search', current_lang) }} - Somali English Blog{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Search Header -->
+    <div class="text-center mb-5">
+        <h1><i class="fas fa-search me-2"></i>{{ get_text('search_results', current_lang) }}</h1>
+        {% if query %}
+            <p class="lead">
+                {% if current_lang == 'so' %}
+                    Natiijada raadinta: "<strong>{{ query }}</strong>"
+                {% else %}
+                    Search results for: "<strong>{{ query }}</strong>"
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            {% if query %}
+                <!-- Blog Posts Results -->
+                {% if posts.items %}
+                    <section class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-blog me-2"></i>{{ get_text('posts', current_lang) }}
+                            <span class="badge bg-primary">{{ posts.total }}</span>
+                        </h3>
+                        
+                        <div class="row">
+                            {% for post in posts.items %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                {% if post.category %}
+                                                    <span class="badge bg-primary">
+                                                        {{ post.category.name_so if current_lang == 'so' else post.category.name_en }}
+                                                    </span>
+                                                {% endif %}
+                                                <small class="text-muted">{{ post.created_at.strftime('%B %d, %Y') }}</small>
+                                            </div>
+                                            
+                                            <h5 class="card-title">
+                                                <a href="{{ url_for('post', slug=post.slug) }}?lang={{ current_lang }}" class="text-decoration-none">
+                                                    {{ post.title_so if current_lang == 'so' else post.title_en }}
+                                                </a>
+                                            </h5>
+                                            
+                                            <p class="card-text">
+                                                {{ (post.excerpt_so if current_lang == 'so' else post.excerpt_en) or (post.content_so[:150] + '...' if current_lang == 'so' else post.content_en[:150] + '...') }}
+                                            </p>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                                                </small>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-comments me-1"></i>{{ post.comments|length }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{{ url_for('post', slug=post.slug) }}?lang={{ current_lang }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-arrow-right me-1"></i>{{ get_text('read_more', current_lang) }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination for Posts -->
+                        {% if posts.pages > 1 %}
+                            <nav aria-label="Search posts pagination">
+                                <ul class="pagination justify-content-center">
+                                    {% if posts.has_prev %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('search', q=query, page=posts.prev_num, lang=current_lang) }}">
+                                                <i class="fas fa-chevron-left me-1"></i>{{ get_text('previous', current_lang) }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for page_num in posts.iter_pages() %}
+                                        {% if page_num %}
+                                            {% if page_num != posts.page %}
+                                                <li class="page-item">
+                                                    <a class="page-link" href="{{ url_for('search', q=query, page=page_num, lang=current_lang) }}">{{ page_num }}</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item active">
+                                                    <span class="page-link">{{ page_num }}</span>
+                                                </li>
+                                            {% endif %}
+                                        {% else %}
+                                            <li class="page-item disabled">
+                                                <span class="page-link">...</span>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if posts.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('search', q=query, page=posts.next_num, lang=current_lang) }}">
+                                                {{ get_text('next', current_lang) }}<i class="fas fa-chevron-right ms-1"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    </section>
+                {% endif %}
+
+                <!-- Links Results -->
+                {% if links %}
+                    <section class="mb-5">
+                        <h3 class="mb-4">
+                            <i class="fas fa-link me-2"></i>{{ get_text('links', current_lang) }}
+                            <span class="badge bg-secondary">{{ links|length }}</span>
+                        </h3>
+                        
+                        <div class="row">
+                            {% for link in links %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                {% if link.category %}
+                                                    <span class="badge bg-secondary">
+                                                        {{ link.category.name_so if current_lang == 'so' else link.category.name_en }}
+                                                    </span>
+                                                {% endif %}
+                                                {% if link.featured %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-star"></i> Featured
+                                                    </span>
+                                                {% endif %}
+                                                <small class="text-muted">{{ link.created_at.strftime('%b %d, %Y') }}</small>
+                                            </div>
+                                            
+                                            <h5 class="card-title">
+                                                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                                                    {{ link.title_so if current_lang == 'so' else link.title_en }}
+                                                    <i class="fas fa-external-link-alt fa-sm ms-1"></i>
+                                                </a>
+                                            </h5>
+                                            
+                                            {% if (link.description_so if current_lang == 'so' else link.description_en) %}
+                                                <p class="card-text">
+                                                    {{ (link.description_so if current_lang == 'so' else link.description_en)[:120] }}
+                                                    {% if (link.description_so if current_lang == 'so' else link.description_en)|length > 120 %}...{% endif %}
+                                                </p>
+                                            {% endif %}
+                                            
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user me-1"></i>{{ link.submitted_by or 'Anonymous' }}
+                                                </small>
+                                                <small class="text-muted">{{ link.url|truncate(25) }}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-footer bg-transparent">
+                                            <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fas fa-external-link-alt me-1"></i>
+                                                {% if current_lang == 'so' %}
+                                                    Booqo
+                                                {% else %}
+                                                    Visit
+                                                {% endif %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+
+                <!-- No Results -->
+                {% if not posts.items and not links %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search-minus fa-3x text-muted mb-3"></i>
+                        <h4>
+                            {% if current_lang == 'so' %}
+                                Wax lama helin
+                            {% else %}
+                                No results found
+                            {% endif %}
+                        </h4>
+                        <p class="text-muted mb-4">
+                            {% if current_lang == 'so' %}
+                                Jarib eray kale ama yaree ereyada raadinta
+                            {% else %}
+                                Try different keywords or reduce search terms
+                            {% endif %}
+                        </p>
+                        <a href="{{ url_for('blog') }}" class="btn btn-primary me-2">
+                            <i class="fas fa-blog me-2"></i>{{ get_text('blog', current_lang) }}
+                        </a>
+                        <a href="{{ url_for('links') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-link me-2"></i>{{ get_text('free_links', current_lang) }}
+                        </a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <!-- Search Form -->
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-4"></i>
+                    <h3 class="mb-4">
+                        {% if current_lang == 'so' %}
+                            Raadi macluumaad iyo links
+                        {% else %}
+                            Search posts and links
+                        {% endif %}
+                    </h3>
+                    
+                    <form class="row g-3 justify-content-center" action="{{ url_for('search') }}" method="GET">
+                        <input type="hidden" name="lang" value="{{ current_lang }}">
+                        <div class="col-auto">
+                            <input type="search" name="q" class="form-control form-control-lg" 
+                                   placeholder="{{ get_text('search_placeholder', current_lang) }}" 
+                                   style="min-width: 300px;">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>{{ get_text('search', current_lang) }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- AdSense Ad Space -->
+            <div class="ad-space mb-4 text-center p-4 bg-light rounded shadow-sm">
+                <i class="fas fa-ad fa-3x mb-3"></i>
+                <p>AdSense Advertisement</p>
+            </div>
+
+            <!-- Search Tips -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        {% if current_lang == 'so' %}
+                            Tilmaamaha Raadinta
+                        {% else %}
+                            Search Tips
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Isticmaal erayo kooban oo cad
+                            {% else %}
+                                Use specific keywords
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Jarib erayo kala duwan
+                            {% else %}
+                                Try different word combinations
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Raadi luqadahaada labada
+                            {% else %}
+                                Search in both languages
+                            {% endif %}
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Hubso qoraalka saxda ah
+                            {% else %}
+                                Check your spelling
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Popular Categories -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>{{ get_text('categories', current_lang) }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for category in categories %}
+                            <a href="{{ url_for('blog', category=category.id) }}" 
+                               class="badge bg-secondary text-decoration-none">
+                                {{ category.name_so if current_lang == 'so' else category.name_en }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

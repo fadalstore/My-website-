@@ -1,0 +1,189 @@
+# Render.com deployment configuration for Somali English Blog
+# This file configures the deployment settings for the Flask application
+
+services:
+  # Web Service Configuration
+  - type: web
+    name: somali-english-blog
+    runtime: python3
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT main:app
+    plan: free
+    branch: main
+    healthCheckPath: /
+    
+    # Environment Variables
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@somali-english-blog.com
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: blog-database
+          property: connectionString
+    
+    # Auto-deploy settings
+    autoDeploy: true
+    
+    # Build settings
+    rootDir: .
+    
+    # Health check settings
+    healthCheck:
+      path: /
+      intervalSeconds: 30
+      timeoutSeconds: 10
+      unhealthyThresholdCount: 3
+      healthyThresholdCount: 2
+    
+    # Resource limits (Free tier)
+    disk:
+      size: 1GB
+      mountPath: /opt/render/project
+
+# Database Configuration  
+databases:
+  - name: blog-database
+    databaseName: somali_english_blog
+    user: blog_user
+    plan: free
+    region: oregon
+    
+    # Database initialization
+    postgresMajorVersion: 15
+
+# Static Files Configuration (Optional - Flask serves static files)
+# Render can also serve static files directly for better performance
+staticSites: []
+
+# Background Services (for future use - cron jobs, etc.)
+services: []
+
+# Custom Headers and Redirects
+headers: []
+redirects: []
+
+# Build Configuration
+build:
+  # Build command runs automatically
+  commands: []
+  
+  # Build environment variables
+  env:
+    PYTHON_VERSION: "3.11"
+    PIP_VERSION: "23.0"
+    
+# Monitoring and Alerts
+monitoring:
+  enabled: true
+  
+  # Alert conditions
+  alerts:
+    - type: cpu
+      threshold: 80
+      duration: 5m
+      
+    - type: memory  
+      threshold: 80
+      duration: 5m
+      
+    - type: response_time
+      threshold: 2000ms
+      duration: 2m
+
+# Scaling Configuration (Paid plans only)
+scaling:
+  minInstances: 1
+  maxInstances: 1
+  targetCPU: 70
+  targetMemory: 70
+
+# Security Configuration
+security:
+  # Force HTTPS
+  redirectHttpToHttps: true
+  
+  # Security headers
+  headers:
+    - name: X-Content-Type-Options
+      value: nosniff
+    - name: X-Frame-Options
+      value: DENY
+    - name: X-XSS-Protection
+      value: "1; mode=block"
+    - name: Strict-Transport-Security
+      value: "max-age=31536000; includeSubDomains"
+    - name: Content-Security-Policy
+      value: "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com cdn.replit.com; style-src 'self' 'unsafe-inline' cdn.replit.com cdnjs.cloudflare.com; font-src 'self' cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self'"
+
+# Logging Configuration
+logging:
+  level: info
+  format: json
+  
+  # Log retention
+  retention:
+    days: 7
+
+# Backup Configuration (Paid plans)
+backups:
+  enabled: false
+  schedule: "0 2 * * *" # Daily at 2 AM
+  retention: 7
+
+# Custom Domains (Configure after deployment)
+domains: []
+
+# Webhooks for CI/CD integration
+webhooks: []
+
+# Additional Configuration Notes:
+# 
+# 1. Create a requirements.txt file in your project root with:
+#    Flask==2.3.3
+#    Flask-SQLAlchemy==3.0.5
+#    Flask-Login==0.6.3
+#    Flask-Admin==1.6.1
+#    Flask-WTF==1.1.1
+#    WTForms==3.0.1
+#    Werkzeug==2.3.7
+#    gunicorn==21.2.0
+#    psycopg2-binary==2.9.7
+#    python-dotenv==1.0.0
+#
+# 2. Environment Variables to set in Render Dashboard:
+#    - SESSION_SECRET: A random secret key (auto-generated)
+#    - ADMIN_PASSWORD: Admin login password (auto-generated)
+#    - ADMIN_EMAIL: Admin email address
+#
+# 3. After deployment:
+#    - Configure custom domain if needed
+#    - Set up Google AdSense
+#    - Configure email notifications
+#    - Set up monitoring alerts
+#
+# 4. Database Migration:
+#    - Database tables are created automatically on first run
+#    - Default admin user is created with credentials from env vars
+#
+# 5. Static Files:
+#    - Flask serves static files directly
+#    - For better performance, consider using a CDN
+#
+# 6. SSL/TLS:
+#    - Render provides free SSL certificates
+#    - HTTPS redirect is enabled by default
+#
+# 7. Scaling:
+#    - Free tier: 1 instance, 512MB RAM, shared CPU
+#    - Paid plans support auto-scaling
+#
+# 8. Monitoring:
+#    - Basic monitoring included
+#    - Logs available in Render dashboard
+#    - Set up external monitoring for production use

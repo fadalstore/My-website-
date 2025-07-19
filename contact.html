@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('contact', current_lang) }} - Somali English Blog{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="text-center mb-5">
+                <h1><i class="fas fa-envelope me-2"></i>{{ get_text('contact', current_lang) }}</h1>
+                <p class="lead">{{ get_text('contact_info', current_lang) }}</p>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-paper-plane me-2"></i>{{ get_text('send_message', current_lang) }}
+                    </h5>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">{{ get_text('name', current_lang) }} *</label>
+                                {{ form.name(class="form-control", id="name", required=True) }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.name.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">{{ get_text('email', current_lang) }} *</label>
+                                {{ form.email(class="form-control", id="email", required=True) }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">
+                                        {% for error in form.email.errors %}
+                                            <div>{{ error }}</div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">{{ get_text('subject', current_lang) }} *</label>
+                            {{ form.subject(class="form-control", id="subject", required=True) }}
+                            {% if form.subject.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.subject.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="message" class="form-label">{{ get_text('message', current_lang) }} *</label>
+                            {{ form.message(class="form-control", id="message", rows="6", required=True) }}
+                            {% if form.message.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.message.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>{{ get_text('send_message', current_lang) }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="row mt-5">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                            <h5>Email</h5>
+                            <p class="text-muted">contact@somali-english-blog.com</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-globe fa-3x text-primary mb-3"></i>
+                            <h5>
+                                {% if current_lang == 'so' %}
+                                    Bogga Internetka
+                                {% else %}
+                                    Website
+                                {% endif %}
+                            </h5>
+                            <p class="text-muted">www.somali-english-blog.com</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                            <h5>
+                                {% if current_lang == 'so' %}
+                                    Saacadaha Hawlgalka
+                                {% else %}
+                                    Response Time
+                                {% endif %}
+                            </h5>
+                            <p class="text-muted">
+                                {% if current_lang == 'so' %}
+                                    Gudaha 24 saacadood
+                                {% else %}
+                                    Within 24 hours
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-question-circle me-2"></i>
+                        {% if current_lang == 'so' %}
+                            Su'aalaha Badanaa La Waydiiyyo
+                        {% else %}
+                            Frequently Asked Questions
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+                                    {% if current_lang == 'so' %}
+                                        Sidee ayaan u soo diri karaa link cusub?
+                                    {% else %}
+                                        How can I submit a new link?
+                                    {% endif %}
+                                </button>
+                            </h2>
+                            <div id="collapse1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    {% if current_lang == 'so' %}
+                                        Booqo bogga "Links Bilaash" oo riix "Dir Link" button-ka. Ka buuxi foomka oo links-kaaga dir.
+                                    {% else %}
+                                        Visit the "Free Links" page and click the "Submit Link" button. Fill out the form and submit your link.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse2">
+                                    {% if current_lang == 'so' %}
+                                        Maxay qaadataa in link-kayga la aqbalo?
+                                    {% else %}
+                                        How long does it take for my link to be approved?
+                                    {% endif %}
+                                </button>
+                            </h2>
+                            <div id="collapse2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    {% if current_lang == 'so' %}
+                                        Waxaa qaadataa 24-48 saacadood si aynu u eegno link-ga. Waxaad ogaan doontaa email marka la aqbalo ama la diido.
+                                    {% else %}
+                                        It takes 24-48 hours to review your link. You'll be notified via email whether it's approved or rejected.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse3">
+                                    {% if current_lang == 'so' %}
+                                        Miyaan qori karaa blog post?
+                                    {% else %}
+                                        Can I write a blog post?
+                                    {% endif %}
+                                </button>
+                            </h2>
+                            <div id="collapse3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    {% if current_lang == 'so' %}
+                                        Haa! Nala soo xiriir si aad ugu biirto kooxda qorayaasha. Waxaynu raadineynaa qorayaasha ku qora luqadaha Soomaali iyo Ingiriisiba.
+                                    {% else %}
+                                        Yes! Contact us to join our team of writers. We're looking for contributors who can write in both Somali and English.
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- AdSense Ad Space -->
+            <div class="ad-space mb-4 text-center p-4 bg-light rounded shadow-sm">
+                <i class="fas fa-ad fa-3x mb-3"></i>
+                <p>AdSense Advertisement</p>
+            </div>
+
+            <!-- Social Media -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-share-alt me-2"></i>
+                        {% if current_lang == 'so' %}
+                            Nala Soo Xiriir
+                        {% else %}
+                            Connect With Us
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-info btn-sm">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-danger btn-sm">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-success btn-sm">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                    <p class="small text-muted mt-3">
+                        {% if current_lang == 'so' %}
+                            Nala socda warbaahinta bulshada
+                        {% else %}
+                            Follow us on social media
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('blog', current_lang) }} - Somali English Blog{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-blog me-2"></i>{{ get_text('blog', current_lang) }}</h1>
+                
+                <!-- Category Filter -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter me-2"></i>{{ get_text('categories', current_lang) }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('blog') }}">{{ get_text('all_categories', current_lang) }}</a></li>
+                        {% for category in categories %}
+                            <li>
+                                <a class="dropdown-item {% if selected_category == category.id %}active{% endif %}" 
+                                   href="{{ url_for('blog', category=category.id) }}">
+                                    {{ category.name_so if current_lang == 'so' else category.name_en }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Blog Posts -->
+            {% if posts.items %}
+                <div class="row">
+                    {% for post in posts.items %}
+                        <div class="col-md-6 mb-4">
+                            <article class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        {% if post.category %}
+                                            <span class="badge bg-primary">
+                                                {{ post.category.name_so if current_lang == 'so' else post.category.name_en }}
+                                            </span>
+                                        {% endif %}
+                                        <small class="text-muted">{{ post.created_at.strftime('%B %d, %Y') }}</small>
+                                    </div>
+                                    
+                                    <h5 class="card-title">
+                                        <a href="{{ url_for('post', slug=post.slug) }}?lang={{ current_lang }}" class="text-decoration-none">
+                                            {{ post.title_so if current_lang == 'so' else post.title_en }}
+                                        </a>
+                                    </h5>
+                                    
+                                    <p class="card-text">
+                                        {{ (post.excerpt_so if current_lang == 'so' else post.excerpt_en) or (post.content_so[:200] + '...' if current_lang == 'so' else post.content_en[:200] + '...') }}
+                                    </p>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                                        </small>
+                                        <small class="text-muted">
+                                            <i class="fas fa-comments me-1"></i>{{ post.comments|length }} {{ get_text('comments', current_lang) }}
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent">
+                                    <a href="{{ url_for('post', slug=post.slug) }}?lang={{ current_lang }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-arrow-right me-1"></i>{{ get_text('read_more', current_lang) }}
+                                    </a>
+                                </div>
+                            </article>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if posts.pages > 1 %}
+                    <nav aria-label="Blog pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if posts.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('blog', page=posts.prev_num, category=selected_category) }}">
+                                        <i class="fas fa-chevron-left me-1"></i>{{ get_text('previous', current_lang) }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in posts.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != posts.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('blog', page=page_num, category=selected_category) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if posts.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('blog', page=posts.next_num, category=selected_category) }}">
+                                        {{ get_text('next', current_lang) }}<i class="fas fa-chevron-right ms-1"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-blog fa-3x text-muted mb-3"></i>
+                    <h4>{{ get_text('no_posts', current_lang) }}</h4>
+                    <p class="text-muted">
+                        {% if current_lang == 'so' %}
+                            Waxba kama jiraan posts-kan qaybtan. Ka noqo mar kale.
+                        {% else %}
+                            No posts found in this category. Check back later.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- AdSense Ad Space -->
+            <div class="ad-space mb-4 text-center p-4 bg-light rounded shadow-sm">
+                <i class="fas fa-ad fa-3x mb-3"></i>
+                <p>AdSense Advertisement</p>
+            </div>
+
+            <!-- Categories Widget -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tags me-2"></i>{{ get_text('categories', current_lang) }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('blog') }}" class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">
+                            {{ get_text('all_categories', current_lang) }}
+                        </a>
+                        {% for category in categories %}
+                            <a href="{{ url_for('blog', category=category.id) }}" 
+                               class="list-group-item list-group-item-action {% if selected_category == category.id %}active{% endif %}">
+                                {{ category.name_so if current_lang == 'so' else category.name_en }}
+                                <span class="badge bg-secondary float-end">{{ category.posts|length }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- RSS Feed -->
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6><i class="fas fa-rss me-2"></i>RSS Feed</h6>
+                    <p class="small text-muted">
+                        {% if current_lang == 'so' %}
+                            Ka hel posts-ka cusub RSS feed-ka dhegta
+                        {% else %}
+                            Stay updated with our latest posts via RSS
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('rss') }}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-rss me-1"></i>Subscribe
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

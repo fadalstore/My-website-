@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('home', current_lang) }} - Somali English Blog{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5 bg-gradient">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4">
+                    {% if current_lang == 'so' %}
+                        Ku Soo Dhawaada Blog-ga Soomaali-Ingiriis
+                    {% else %}
+                        Welcome to Somali English Blog
+                    {% endif %}
+                </h1>
+                <p class="lead mb-4">
+                    {% if current_lang == 'so' %}
+                        Macluumaad, khayraad, iyo link-yo bilaash ah oo loogu talagalay bulshada Soomaaliyeed
+                    {% else %}
+                        Bilingual content, resources, and free links for the Somali community
+                    {% endif %}
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="{{ url_for('blog') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-blog me-2"></i>{{ get_text('blog', current_lang) }}
+                    </a>
+                    <a href="{{ url_for('links') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-link me-2"></i>{{ get_text('free_links', current_lang) }}
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <!-- AdSense Ad Space -->
+                <div class="ad-space text-center p-4 bg-light text-dark rounded">
+                    <i class="fas fa-ad fa-3x mb-3"></i>
+                    <p>AdSense Advertisement Space</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Posts Section -->
+{% if featured_posts %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-star me-2"></i>{{ get_text('featured_posts', current_lang) }}
+        </h2>
+        <div class="row">
+            {% for post in featured_posts %}
+                <div class="col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-primary">
+                                    {{ post.category.name_so if current_lang == 'so' and post.category else (post.category.name_en if post.category else 'General') }}
+                                </span>
+                                <small class="text-muted">{{ post.created_at.strftime('%b %d, %Y') }}</small>
+                            </div>
+                            <h5 class="card-title">
+                                {{ post.title_so if current_lang == 'so' else post.title_en }}
+                            </h5>
+                            <p class="card-text">
+                                {{ (post.excerpt_so if current_lang == 'so' else post.excerpt_en) or (post.content_so[:150] + '...' if current_lang == 'so' else post.content_en[:150] + '...') }}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ url_for('post', slug=post.slug) }}?lang={{ current_lang }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-arrow-right me-1"></i>{{ get_text('read_more', current_lang) }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Recent Posts & Links Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <!-- Recent Posts -->
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3><i class="fas fa-clock me-2"></i>{{ get_text('recent_posts', current_lang) }}</h3>
+                    <a href="{{ url_for('blog') }}" class="btn btn-outline-primary">{{ get_text('view_all', current_lang) }}</a>
+                </div>
+                
+                <div class="row">
+                    {% for post in recent_posts %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <span class="badge bg-secondary">
+                                            {{ post.category.name_so if current_lang == 'so' and post.category else (post.category.name_en if post.category else 'General') }}
+                                        </span>
+                                        <small class="text-muted">{{ post.created_at.strftime('%b %d') }}</small>
+                                    </div>
+                                    <h6 class="card-title">
+                                        <a href="{{ url_for('post', slug=post.slug) }}?lang={{ current_lang }}" class="text-decoration-none">
+                                            {{ post.title_so if current_lang == 'so' else post.title_en }}
+                                        </a>
+                                    </h6>
+                                    <p class="card-text small">
+                                        {{ (post.excerpt_so if current_lang == 'so' else post.excerpt_en) or (post.content_so[:100] + '...' if current_lang == 'so' else post.content_en[:100] + '...') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- AdSense Sidebar Ad -->
+                <div class="ad-space mb-4 text-center p-3 bg-white rounded shadow-sm">
+                    <i class="fas fa-ad fa-2x mb-2"></i>
+                    <p class="small mb-0">AdSense Sidebar Ad</p>
+                </div>
+                
+                <!-- Featured Links -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-star me-2"></i>{{ get_text('featured_links', current_lang) }}</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for link in featured_links %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <h6 class="mb-1">
+                                    <a href="{{ link.url }}" target="_blank" class="text-decoration-none">
+                                        {{ link.title_so if current_lang == 'so' else link.title_en }}
+                                        <i class="fas fa-external-link-alt fa-sm ms-1"></i>
+                                    </a>
+                                </h6>
+                                <p class="small text-muted mb-0">
+                                    {{ (link.description_so if current_lang == 'so' else link.description_en) or '' }}
+                                </p>
+                            </div>
+                        {% endfor %}
+                        <a href="{{ url_for('links') }}" class="btn btn-outline-primary btn-sm">{{ get_text('view_all', current_lang) }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5">
+    <div class="container text-center">
+        <h3 class="mb-4">
+            {% if current_lang == 'so' %}
+                Ka Qeyb Qaado Bulshadeenna
+            {% else %}
+                Join Our Community
+            {% endif %}
+        </h3>
+        <p class="lead mb-4">
+            {% if current_lang == 'so' %}
+                Soo dir link-yo cusub, ka dhiib faallo, ama nala soo xiriir
+            {% else %}
+                Submit new links, leave comments, or get in touch with us
+            {% endif %}
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ url_for('links') }}#submit" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>{{ get_text('submit_link', current_lang) }}
+            </a>
+            <a href="{{ url_for('contact') }}" class="btn btn-outline-primary">
+                <i class="fas fa-envelope me-2"></i>{{ get_text('contact', current_lang) }}
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

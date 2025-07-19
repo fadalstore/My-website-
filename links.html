@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}{{ get_text('free_links', current_lang) }} - Somali English Blog{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-link me-2"></i>{{ get_text('free_links', current_lang) }}</h1>
+                
+                <!-- Category Filter -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter me-2"></i>{{ get_text('categories', current_lang) }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('links') }}">{{ get_text('all_categories', current_lang) }}</a></li>
+                        {% for category in categories %}
+                            <li>
+                                <a class="dropdown-item {% if selected_category == category.id %}active{% endif %}" 
+                                   href="{{ url_for('links', category=category.id) }}">
+                                    {{ category.name_so if current_lang == 'so' else category.name_en }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Submit Link Button -->
+            <div class="alert alert-info d-flex align-items-center justify-content-between">
+                <div>
+                    <i class="fas fa-info-circle me-2"></i>
+                    {% if current_lang == 'so' %}
+                        Ma haysaa link fiican oo aad rabto inaad la wadaagto bulshada?
+                    {% else %}
+                        Have a useful link to share with the community?
+                    {% endif %}
+                </div>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#submitLinkModal">
+                    <i class="fas fa-plus me-2"></i>{{ get_text('submit_link', current_lang) }}
+                </button>
+            </div>
+
+            <!-- Links List -->
+            {% if links.items %}
+                <div class="row">
+                    {% for link in links.items %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        {% if link.category %}
+                                            <span class="badge bg-primary">
+                                                {{ link.category.name_so if current_lang == 'so' else link.category.name_en }}
+                                            </span>
+                                        {% endif %}
+                                        {% if link.featured %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-star"></i> Featured
+                                            </span>
+                                        {% endif %}
+                                        <small class="text-muted">{{ link.created_at.strftime('%b %d, %Y') }}</small>
+                                    </div>
+                                    
+                                    <h5 class="card-title">
+                                        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                                            {{ link.title_so if current_lang == 'so' else link.title_en }}
+                                            <i class="fas fa-external-link-alt fa-sm ms-1"></i>
+                                        </a>
+                                    </h5>
+                                    
+                                    {% if (link.description_so if current_lang == 'so' else link.description_en) %}
+                                        <p class="card-text">
+                                            {{ (link.description_so if current_lang == 'so' else link.description_en)[:150] }}
+                                            {% if (link.description_so if current_lang == 'so' else link.description_en)|length > 150 %}...{% endif %}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-user me-1"></i>{{ link.submitted_by or 'Anonymous' }}
+                                        </small>
+                                        <small class="text-muted">{{ link.url|truncate(30) }}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer bg-transparent">
+                                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-external-link-alt me-1"></i>
+                                        {% if current_lang == 'so' %}
+                                            Booqo Bogga
+                                        {% else %}
+                                            Visit Site
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if links.pages > 1 %}
+                    <nav aria-label="Links pagination">
+                        <ul class="pagination justify-content-center">
+                            {% if links.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('links', page=links.prev_num, category=selected_category) }}">
+                                        <i class="fas fa-chevron-left me-1"></i>{{ get_text('previous', current_lang) }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in links.iter_pages() %}
+                                {% if page_num %}
+                                    {% if page_num != links.page %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ url_for('links', page=page_num, category=selected_category) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ page_num }}</span>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if links.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('links', page=links.next_num, category=selected_category) }}">
+                                        {{ get_text('next', current_lang) }}<i class="fas fa-chevron-right ms-1"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-link fa-3x text-muted mb-3"></i>
+                    <h4>{{ get_text('no_links', current_lang) }}</h4>
+                    <p class="text-muted">
+                        {% if current_lang == 'so' %}
+                            Waxba kama jiraan links-kan qaybtan. Noqo kii ugu horreeyay ee link dhiiba!
+                        {% else %}
+                            No links found in this category. Be the first to submit one!
+                        {% endif %}
+                    </p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#submitLinkModal">
+                        <i class="fas fa-plus me-2"></i>{{ get_text('submit_link', current_lang) }}
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- AdSense Ad Space -->
+            <div class="ad-space mb-4 text-center p-4 bg-light rounded shadow-sm">
+                <i class="fas fa-ad fa-3x mb-3"></i>
+                <p>AdSense Advertisement</p>
+            </div>
+
+            <!-- Categories Widget -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tags me-2"></i>{{ get_text('categories', current_lang) }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('links') }}" class="list-group-item list-group-item-action {% if not selected_category %}active{% endif %}">
+                            {{ get_text('all_categories', current_lang) }}
+                        </a>
+                        {% for category in categories %}
+                            <a href="{{ url_for('links', category=category.id) }}" 
+                               class="list-group-item list-group-item-action {% if selected_category == category.id %}active{% endif %}">
+                                {{ category.name_so if current_lang == 'so' else category.name_en }}
+                                <span class="badge bg-secondary float-end">{{ category.links|length }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% if current_lang == 'so' %}
+                            Tilmaanta Link Dhiibista
+                        {% else %}
+                            Submission Guidelines
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Dir links faa'ido leh oo bilaa ah
+                            {% else %}
+                                Submit useful and free resources
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Hubso in link-ku shaqeeyo
+                            {% else %}
+                                Ensure links are working
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Baaqa sharaxaad qoto dheer
+                            {% else %}
+                                Provide detailed descriptions
+                            {% endif %}
+                        </li>
+                        <li>
+                            <i class="fas fa-times text-danger me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Ha dirin links spam ah ama waxyeello leh
+                            {% else %}
+                                No spam or harmful content
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Submit Link Modal -->
+<div class="modal fade" id="submitLinkModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>{{ get_text('submit_link', current_lang) }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form method="POST" action="{{ url_for('submit_link') }}" id="submit">
+                <div class="modal-body">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ get_text('link_title', current_lang) }} (English) *</label>
+                            {{ form.title_en(class="form-control", required=True) }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ get_text('link_title', current_lang) }} (Somali)</label>
+                            {{ form.title_so(class="form-control") }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ get_text('url', current_lang) }} *</label>
+                        {{ form.url(class="form-control", required=True, placeholder="https://example.com") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ get_text('category', current_lang) }}</label>
+                        {{ form.category_id(class="form-select") }}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ get_text('description', current_lang) }} (English)</label>
+                            {{ form.description_en(class="form-control", rows="3") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ get_text('description', current_lang) }} (Somali)</label>
+                            {{ form.description_so(class="form-control", rows="3") }}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ get_text('your_name', current_lang) }} *</label>
+                            {{ form.submitted_by(class="form-control", required=True) }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ get_text('your_email', current_lang) }} *</label>
+                            {{ form.submitter_email(class="form-control", required=True) }}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <small>
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% if current_lang == 'so' %}
+                                Link-kaaga waxaa la eegi doonaa ka hor inta la daabaco. Waxaad ogaan doontaa email-kaaga marka la aqbalo.
+                            {% else %}
+                                Your link will be reviewed before publication. You'll be notified via email when approved.
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        {% if current_lang == 'so' %}Xir{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>{{ get_text('submit', current_lang) }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

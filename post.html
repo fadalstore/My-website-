@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title_so if current_lang == 'so' else post.title_en }} - Somali English Blog{% endblock %}
+
+{% block meta_description %}{{ (post.meta_description_so if current_lang == 'so' else post.meta_description_en) or (post.excerpt_so if current_lang == 'so' else post.excerpt_en) }}{% endblock %}
+
+{% block meta_keywords %}{{ post.meta_keywords }}{% endblock %}
+
+{% block og_title %}{{ post.title_so if current_lang == 'so' else post.title_en }}{% endblock %}
+
+{% block og_description %}{{ (post.excerpt_so if current_lang == 'so' else post.excerpt_en) or (post.content_so[:200] if current_lang == 'so' else post.content_en[:200]) }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Post Header -->
+            <article class="mb-5">
+                <header class="mb-4">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">{{ get_text('home', current_lang) }}</a></li>
+                            <li class="breadcrumb-item"><a href="{{ url_for('blog') }}">{{ get_text('blog', current_lang) }}</a></li>
+                            {% if post.category %}
+                                <li class="breadcrumb-item">
+                                    <a href="{{ url_for('blog', category=post.category.id) }}">
+                                        {{ post.category.name_so if current_lang == 'so' else post.category.name_en }}
+                                    </a>
+                                </li>
+                            {% endif %}
+                            <li class="breadcrumb-item active">{{ post.title_so if current_lang == 'so' else post.title_en }}</li>
+                        </ol>
+                    </nav>
+                    
+                    <h1 class="display-5 fw-bold mb-3">{{ post.title_so if current_lang == 'so' else post.title_en }}</h1>
+                    
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                        {% if post.category %}
+                            <span class="badge bg-primary fs-6">
+                                {{ post.category.name_so if current_lang == 'so' else post.category.name_en }}
+                            </span>
+                        {% endif %}
+                        <span class="text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i>{{ post.created_at.strftime('%B %d, %Y') }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-user me-1"></i>{{ post.author.username }}
+                        </span>
+                        <span class="text-muted">
+                            <i class="fas fa-comments me-1"></i>{{ comments|length }} {{ get_text('comments', current_lang) }}
+                        </span>
+                    </div>
+
+                    <!-- Social Share Buttons -->
+                    <div class="d-flex gap-2 mb-4">
+                        <span class="text-muted me-2">{{ get_text('share', current_lang) }}:</span>
+                        <a href="https://twitter.com/intent/tweet?text={{ post.title_en|urlencode }}&url={{ request.url|urlencode }}" 
+                           target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.url|urlencode }}" 
+                           target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://wa.me/?text={{ post.title_en|urlencode }}%20{{ request.url|urlencode }}" 
+                           target="_blank" class="btn btn-outline-success btn-sm">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <button onclick="copyToClipboard('{{ request.url }}')" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-link"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Post Content -->
+                <div class="post-content">
+                    {{ (post.content_so if current_lang == 'so' else post.content_en) | safe }}
+                </div>
+
+                <!-- AdSense In-Content Ad -->
+                <div class="ad-space my-5 text-center p-4 bg-light rounded">
+                    <i class="fas fa-ad fa-2x mb-2"></i>
+                    <p class="mb-0">AdSense In-Content Advertisement</p>
+                </div>
+            </article>
+
+            <!-- Comments Section -->
+            <section id="comments" class="mt-5">
+                <h3 class="mb-4">
+                    <i class="fas fa-comments me-2"></i>{{ get_text('comments', current_lang) }} ({{ comments|length }})
+                </h3>
+
+                <!-- Add Comment Form -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">{{ get_text('leave_comment', current_lang) }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('add_comment', slug=post.slug) }}">
+                            {{ form.hidden_tag() }}
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ get_text('name', current_lang) }}</label>
+                                    {{ form.name(class="form-control") }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ get_text('email', current_lang) }}</label>
+                                    {{ form.email(class="form-control") }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">{{ get_text('comment', current_lang) }}</label>
+                                {{ form.content(class="form-control", rows="4") }}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>{{ get_text('submit', current_lang) }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Comments List -->
+                {% if comments %}
+                    <div class="comments-list">
+                        {% for comment in comments %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0">{{ comment.name }}</h6>
+                                        <small class="text-muted">{{ comment.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                    </div>
+                                    <p class="mb-0">{{ comment.content }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">{{ get_text('no_comments', current_lang) }}</p>
+                    </div>
+                {% endif %}
+            </section>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- AdSense Sidebar Ad -->
+            <div class="ad-space mb-4 text-center p-4 bg-light rounded shadow-sm">
+                <i class="fas fa-ad fa-3x mb-3"></i>
+                <p>AdSense Sidebar Ad</p>
+            </div>
+
+            <!-- Author Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        {% if current_lang == 'so' %}
+                            Qoraaga
+                        {% else %}
+                            About Author
+                        {% endif %}
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-3x text-muted"></i>
+                    </div>
+                    <h6>{{ post.author.username }}</h6>
+                    <p class="small text-muted">
+                        {% if current_lang == 'so' %}
+                            Qoraa ka mid ah kooxda Somali English Blog
+                        {% else %}
+                            Author at Somali English Blog
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Related Posts -->
+            {% set related_posts = post.category.posts if post.category else [] %}
+            {% if related_posts|length > 1 %}
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-newspaper me-2"></i>{{ get_text('related_posts', current_lang) }}
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        {% for related_post in related_posts %}
+                            {% if related_post.id != post.id and related_post.published %}
+                                <div class="mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                                    <h6 class="mb-1">
+                                        <a href="{{ url_for('post', slug=related_post.slug) }}?lang={{ current_lang }}" class="text-decoration-none">
+                                            {{ related_post.title_so if current_lang == 'so' else related_post.title_en }}
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">{{ related_post.created_at.strftime('%B %d, %Y') }}</small>
+                                </div>
+
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('{% if current_lang == "so" %}Link-ka waa la koobiyeeyay!{% else %}Link copied to clipboard!{% endif %}');
+    });
+}
+</script>
+{% endblock %}

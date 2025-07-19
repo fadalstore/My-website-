@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Somali English Blog{% endblock %}</title>
+    
+    <!-- Meta tags -->
+    <meta name="description" content="{% block meta_description %}Bilingual blog featuring Somali and English content with free resources directory{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Somali, English, blog, resources, links{% endblock %}">
+    <meta name="author" content="Somali English Blog">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="{% block og_title %}Somali English Blog{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Bilingual blog featuring Somali and English content{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="{{ url_for('rss') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
+                <i class="fas fa-globe me-2"></i>Somali English Blog
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>{{ get_text('home', current_lang) }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('blog') }}">
+                            <i class="fas fa-blog me-1"></i>{{ get_text('blog', current_lang) }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('links') }}">
+                            <i class="fas fa-link me-1"></i>{{ get_text('free_links', current_lang) }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('contact') }}">
+                            <i class="fas fa-envelope me-1"></i>{{ get_text('contact', current_lang) }}
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Search -->
+                <form class="d-flex me-3" action="{{ url_for('search') }}" method="GET">
+                    <input type="hidden" name="lang" value="{{ current_lang }}">
+                    <input class="form-control me-2" type="search" name="q" placeholder="{{ get_text('search_placeholder', current_lang) }}">
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                
+                <!-- Language Switch -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-language me-1"></i>{{ get_text('language', current_lang) }}
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('set_language', lang='en') }}">{{ get_text('english', current_lang) }}</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('set_language', lang='so') }}">{{ get_text('somali', current_lang) }}</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="padding-top: 80px;">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container mt-3">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Somali English Blog</h5>
+                    <p class="text-muted">Bilingual content and free resources for the Somali community.</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>{{ get_text('categories', current_lang) }}</h6>
+                    <ul class="list-unstyled">
+                        {% for category in categories %}
+                            <li><a href="{{ url_for('blog', category=category.id) }}" class="text-muted text-decoration-none">
+                                {{ category.name_so if current_lang == 'so' else category.name_en }}
+                            </a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('rss') }}" class="text-muted text-decoration-none">RSS Feed</a></li>
+                        <li><a href="{{ url_for('sitemap') }}" class="text-muted text-decoration-none">Sitemap</a></li>
+                        <li><a href="/admin" class="text-muted text-decoration-none">Admin</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; 2025 Somali English Blog. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AdSense Placeholder -->
+    <div class="adsense-placeholder">
+        <!-- AdSense code will be inserted here -->
+        <div class="container">
+            <div class="text-center p-3 bg-light text-dark rounded">
+                <small>Advertisement Space - AdSense Integration Ready</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
